@@ -1,7 +1,11 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./auth');
-require('dotenv').config();
+const reviewRoutes = require('./review');
+
+
 
 const app = express();
 
@@ -11,6 +15,7 @@ app.use(express.json());
 
 // Routes Mount Target
 app.use('/api/auth', authRoutes);
+app.use('/api/review', reviewRoutes);
 
 // Health Endpoint
 app.get('/api/health', (req, res) => {
