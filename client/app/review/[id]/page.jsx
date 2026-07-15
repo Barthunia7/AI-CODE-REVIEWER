@@ -8,12 +8,14 @@ export default function ReviewResultsPage({ params }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Baseline fallbacks tracking context
+  let reviewId = '';
+
   useEffect(() => {
     const fetchReviewData = async () => {
       try {
-        // Safe parameter unwrap compatible with Next.js App Router
         const resolvedParams = await params;
-        const reviewId = resolvedParams.id;
+        reviewId = resolvedParams.id;
 
         if (!reviewId) return;
 
@@ -25,7 +27,6 @@ export default function ReviewResultsPage({ params }) {
         
         if (!reviewRes.ok) throw new Error(reviewData.error);
         
-        // Handle database array structure
         const mainReview = Array.isArray(reviewData.review) ? reviewData.review[0] : reviewData.review;
         setReview(mainReview);
         setFindings(reviewData.findings || []);
@@ -46,7 +47,7 @@ export default function ReviewResultsPage({ params }) {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between shadow-md">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Analysis Report Dashboard</h1>
+        <h1 className="text-xl font-bold .bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Analysis Report Dashboard</h1>
         <button onClick={() => router.push('/dashboard')} className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
           ← Run Another Audit
         </button>
@@ -66,6 +67,41 @@ export default function ReviewResultsPage({ params }) {
             <p className="text-slate-300 text-sm leading-relaxed">{review.summary || 'No overview summary logged for this project snippet.'}</p>
           </div>
         </div>
+
+        {/* Day 13 Optimization: AI Generated Code Documentation Canvas with Download Utility */}
+        {review.documentation && (
+          <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  📝 Automated Code Documentation
+                </h3>
+                <p className="text-slate-400 text-xs font-sans">
+                  AI-generated reference manuals detailing functional purpose, architectural structures, parameter matrices, and explicit return value targets.
+                </p>
+              </div>
+              <button 
+                onClick={async () => {
+                  const resolvedParams = await params;
+                  const currentId = resolvedParams.id || 'report';
+                  const fileBlob = new Blob([review.documentation], { type: 'text/markdown;charset=utf-8;' });
+                  const downloadLink = document.createElement('a');
+                  downloadLink.href = URL.createObjectURL(fileBlob);
+                  downloadLink.setAttribute('download', `documentation_review_${currentId}.md`);
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  document.body.removeChild(downloadLink);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs font-bold px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1.5 whitespace-nowrap self-start sm:self-center"
+              >
+                💾 Download Markdown File
+              </button>
+            </div>
+            <pre className="bg-slate-950 border border-slate-900 text-emerald-400 p-4 rounded-lg font-mono text-sm overflow-x-auto whitespace-pre-wrap shadow-inner leading-relaxed">
+              {review.documentation}
+            </pre>
+          </div>
+        )}
 
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-white">Identified Vulnerabilities & Issues ({findings.length})</h2>
